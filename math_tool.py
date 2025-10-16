@@ -2,10 +2,10 @@ from mcp.server.fastmcp import FastMCP
 import ast
 import operator as op
 
+# Create the MCP server
 mcp = FastMCP("math_tool")
 
-# --- safe evaluation helper ---
-# Supported operators
+# Operators we’ll allow (no unsafe stuff)
 operators = {
     ast.Add: op.add,
     ast.Sub: op.sub,
@@ -15,28 +15,34 @@ operators = {
     ast.USub: op.neg,
 }
 
-def safe_eval(expr):
+#evaluate math expressions using these cases
+def evaluate_expression(expr: str):
     def eval_node(node):
-        if isinstance(node, ast.Num):      # number
-            return node.n
-        elif isinstance(node, ast.BinOp):  # binary operation
+        if isinstance(node, ast.Constant):
+            return node.value
+        elif isinstance(node, ast.BinOp):
             return operators[type(node.op)](eval_node(node.left), eval_node(node.right))
-        elif isinstance(node, ast.UnaryOp): # unary (e.g., -3)
+        elif isinstance(node, ast.UnaryOp):
             return operators[type(node.op)](eval_node(node.operand))
         else:
-            raise ValueError("Unsupported expression")
-    tree = ast.parse(expr, mode="eval").body
-    return eval_node(tree)
+            raise ValueError("That expression uses something we don’t support.")
 
-# --- MCP tool ---
+    try:
+        tree = ast.parse(expr, mode="eval").body
+        return eval_node(tree)
+    except Exception as e:
+        raise ValueError(f"Couldn’t evaluate expression: {e}")
+
+
+# quick math tool
 @mcp.tool()
 def calculate(expression: str) -> dict:
-    """Evaluate a basic math expression safely."""
     try:
-        result = safe_eval(expression)
+        result = evaluate_expression(expression)
         return {"input": expression, "result": result}
     except Exception as e:
         return {"error": str(e)}
 
 if __name__ == "__main__":
+    print("Starting math MCP tool...")
     mcp.run()
