@@ -14,6 +14,13 @@ from mcp.server.fastmcp import FastMCP
 import ast
 import operator as op
 
+# next next step: routing agent directly to wolfram alpha tool?
+
+
+#first do this:
+#instead of calling ollama, call mcp math tool
+#parsing task into parts
+
 # Initialize Ollama client
 ollama_client = ollama.Client(host=OLLAMA_URL)
 

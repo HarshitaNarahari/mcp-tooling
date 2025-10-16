@@ -46,3 +46,4 @@ def calculate(expression: str) -> dict:
 if __name__ == "__main__":
     print("Starting math MCP tool...")
     mcp.run()
+
